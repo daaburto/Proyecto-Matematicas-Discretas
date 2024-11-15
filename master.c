@@ -2,6 +2,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#define RESET   "\033[0m"   
+#define ROJO    "\033[31m"  
+#define VERDE   "\033[32m"  
+#define MORADO  "\033[0;35m"
 
 
 // Estructura para representar un grafo
@@ -65,10 +69,10 @@ Grafo* crearGrafoDesdeArchivo(const char* nombreArchivo) {
 void imprimirGrafo(Grafo* g) {
     printf("\nRepresentación del grafo:\n");
     for (int i = 0; i < g->vertices; i++) {
-        printf("Vértice %d:", i + 1);
+        printf("Vértice %d: ", i + 1);
         for (int j = 0; j < g->vertices; j++) {
             if (g->adyacencia[i][j] == 1) {
-                printf(" -> %d", j + 1);
+                printf("%d ", j + 1);
             }
         }
         printf("\n");
@@ -142,7 +146,7 @@ int main() {
     char opcion;
     
     do {
-        printf("\nMenú de opciones:\n");
+        printf("\n       Menú de opciones\n");
         printf("1. Cargar grafo desde archivo\n");
         printf("2. Mostrar grafo\n");
         printf("3. Calcular grado máximo\n");
@@ -162,7 +166,7 @@ int main() {
                 }
                 grafo = crearGrafoDesdeArchivo(nombreArchivo);
                 if (grafo != NULL) {
-                    printf("Grafo cargado exitosamente.\n");
+                    printf(VERDE "\nGrafo cargado exitosamente.\n" RESET);
                 }
                 break;
 
@@ -171,25 +175,25 @@ int main() {
                 if (grafo != NULL) {
                     imprimirGrafo(grafo);
                 } else {
-                    printf("Primero debe cargar un grafo.\n");
+                    printf(ROJO "\nPrimero debe cargar un grafo.\n" RESET);
                 }
                 break;
 
 
             case '3':
                 if (grafo != NULL) {
-                    printf("El grado máximo del grafo es: %d\n", gradoMaximo(grafo));
+                    printf(VERDE "\nEl grado máximo del grafo es: %d\n"RESET, gradoMaximo(grafo));
                 } else {
-                    printf("Primero debe cargar un grafo.\n");
+                    printf(ROJO "\nPrimero debe cargar un grafo.\n" RESET);
                 }
                 break;
 
 
             case '4':
                 if (grafo != NULL) {
-                    printf("El grado mínimo del grafo es: %d\n", gradoMinimo(grafo));
+                    printf(VERDE "\nEl grado mínimo del grafo es: %d\n"RESET, gradoMinimo(grafo));
                 } else {
-                    printf("Primero debe cargar un grafo.\n");
+                    printf(ROJO "\nPrimero debe cargar un grafo.\n" RESET);
                 }
                 break;
 
@@ -200,34 +204,36 @@ int main() {
                     printf("Ingrese el valor de k: ");
                     scanf("%d", &k);
                     if (esKConexo(grafo, k)) {
-                        printf("El grafo es %d-conexo.\n", k);
+                        printf(VERDE"\nEl grafo es %d-conexo.\n"RESET, k);
                     } else {
-                        printf("El grafo no es %d-conexo.\n", k);
+                        printf(ROJO "\nEl grafo no es %d-conexo.\n"RESET, k);
                     }
                 } else {
-                    printf("Primero debe cargar un grafo.\n");
+                    printf(ROJO "\nPrimero debe cargar un grafo.\n" RESET);
                 }
                 break;
 
 
             case '6':
-                printf("Saliendo del programa...\n");
+                printf(MORADO "Saliendo del programa...\n");
                 break;
 
 
             default:
-                printf("Opción no válida.\n");
+                printf(ROJO"\nOpción no válida.\n"RESET);
                 break;
         }
 
 
         if (opcion != '6') {
-            printf("\n¿Desea realizar otra acción? (s/n): ");
+            printf("\n¿Desea realizar otra acción? (" VERDE"s"RESET"/"ROJO"n"RESET"): ");
             scanf(" %c", &opcion);
             if (opcion == 'n' || opcion == 'N') {
+                printf(MORADO "\nSaliendo del programa...\n");
                 break;
             }
         }
+
     } while (opcion != '6');
 
 
