@@ -118,17 +118,125 @@ int gradoMinimo(Grafo* g) {
 }
 
 
-// Función para verificar si el grafo es k-conexo (implementación básica)
-bool esKConexo(Grafo* g, int k) {
-    if (g->vertices <= k) {
+// Función para verificar si un grafo es conexo usando BFS
+bool esConexo(Grafo* g, bool* verticesEliminados) {
+    if (g->vertices <= 0) return false;
+    
+    // Array para marcar vértices visitados
+    bool* visitado = (bool*)calloc(g->vertices, sizeof(bool));
+    if (!visitado) return false;
+    
+    // Cola para BFS
+    int* cola = (int*)malloc(g->vertices * sizeof(int));
+    if (!cola) {
+        free(visitado);
         return false;
     }
     
-    // Por ahora, solo verificamos que el grado mínimo sea al menos k
-    // Esta es una condición necesaria pero no suficiente para k-conexidad
-    return gradoMinimo(g) >= k;
+    // Encontrar el primer vértice no eliminado para empezar BFS
+    int inicio = -1;
+    for (int i = 0; i < g->vertices; i++) {
+        if (!verticesEliminados[i]) {
+            inicio = i;
+            break;
+        }
+    }
+    
+    if (inicio == -1) {
+        free(visitado);
+        free(cola);
+        return false;
+    }
+    
+    // Inicializar BFS
+    int frente = 0, final = 0;
+    cola[final++] = inicio;
+    visitado[inicio] = true;
+    
+    // Realizar BFS
+    while (frente < final) {
+        int actual = cola[frente++];
+        
+        for (int i = 0; i < g->vertices; i++) {
+            if (g->adyacencia[actual][i] && !verticesEliminados[i] && !visitado[i]) {
+                visitado[i] = true;
+                cola[final++] = i;
+            }
+        }
+    }
+    
+    // Verificar si todos los vértices no eliminados fueron visitados
+    bool esConexo = true;
+    for (int i = 0; i < g->vertices; i++) {
+        if (!verticesEliminados[i] && !visitado[i]) {
+            esConexo = false;
+            break;
+        }
+    }
+    
+    free(visitado);
+    free(cola);
+    return esConexo;
 }
 
+
+// Función recursiva para generar todas las combinaciones posibles de k-1 vértices
+bool verificarCombinaciones(Grafo* g, bool* verticesEliminados, int k, int inicio, int count) {
+    // Si ya seleccionamos k-1 vértices, verificar si el grafo resultante es conexo
+    if (count == k - 1) {
+        return esConexo(g, verticesEliminados);
+    }
+    
+    // Si no hay suficientes vértices restantes para alcanzar k-1
+    if (g->vertices - inicio < k - 1 - count) {
+        return true;
+    }
+    
+    // Para cada vértice restante desde 'inicio'
+    for (int i = inicio; i < g->vertices; i++) {
+        // Marcar vértice como eliminado
+        verticesEliminados[i] = true;
+        
+        // Verificar recursivamente con este vértice eliminado
+        if (!verificarCombinaciones(g, verticesEliminados, k, i + 1, count + 1)) {
+            return false;  // Si encontramos una combinación que desconecta el grafo
+        }
+        
+        // Desmarcar vértice (backtracking)
+        verticesEliminados[i] = false;
+    }
+    
+    return true;
+}
+
+
+// Función principal para verificar si el grafo es k-conexo
+bool esKConexo(Grafo* g, int k) {
+    // Verificar condiciones básicas
+    if (g == NULL || k < 1 || g->vertices <= k) {
+        return false;
+    }
+    
+    // Si k es 1, solo necesitamos verificar si el grafo es conexo
+    if (k == 1) {
+        bool* verticesEliminados = (bool*)calloc(g->vertices, sizeof(bool));
+        if (!verticesEliminados) return false;
+        
+        bool resultado = esConexo(g, verticesEliminados);
+        free(verticesEliminados);
+        return resultado;
+    }
+    
+    // Array para marcar vértices eliminados
+    bool* verticesEliminados = (bool*)calloc(g->vertices, sizeof(bool));
+    if (!verticesEliminados) return false;
+    
+    // Verificar todas las posibles combinaciones de k-1 vértices
+    bool resultado = verificarCombinaciones(g, verticesEliminados, k, 0, 0);
+    
+    free(verticesEliminados);
+    return resultado;
+}
 
 // Función para liberar la memoria del grafo
 void liberarGrafo(Grafo* g) {
